@@ -3,6 +3,9 @@
   <head>
     <title>Recipe: Drawing a square</title>
     <script src="easel.js"></script>
+    <audio id="audioErrou" src="./assets/audio/errou.mp3"></audio>
+    <audio id="audioGanhou" src="./assets/audio/ganhou.mp3"></audio>
+    <audio id="audioPerdeu" src="./assets/audio/perdeu.mp3"></audio>
     <script type="text/javascript">
       var canvas;
       var stage;
@@ -18,6 +21,16 @@
       var txt;
       var matchesFoundText;
       var squares;
+      
+      var audioErrou = document.getElementById("audioErrou");
+      var audioGanhou = document.getElementById("audioGanhou");
+      var audioPerdeu = document.getElementById("audioPerdeu");
+
+      var audiosAcertou = [
+        "./assets/audio/acertou1.mp3",
+        "./assets/audio/acertou2.mp3",
+      ];
+
       
       function init() {
         var rows = 5;
@@ -94,12 +107,16 @@
           if(tileClicked.color === tile.color && tileClicked !== tile){
             tileClicked.visible = false;
             tile.visible = false;
+            playRandomAudioAcertou();
             matchesFound++;
             matchesFoundText.text = "Pairs Found: "+matchesFound+"/"+totalMatchesPossible;
             if (matchesFound===totalMatchesPossible){
               gameOver(true);
             }
           }else{
+            if(tileClicked.visible) {
+              audioErrou.play();
+            }
             tileClicked.graphics.beginFill(gray).rect(squareOutline, squareOutline, squareSide, squareSide);
           }
           tileClicked.updateCache("source-overlay");
@@ -116,6 +133,13 @@
         }
         stage.update();
       }
+      
+      function playRandomAudioAcertou() {
+        var randomIndex = Math.floor(Math.random() * audiosAcertou.length);
+        var audioElement = new Audio(audiosAcertou[randomIndex]);
+        audioElement.play();
+      }
+
       function gameOver(win){
         Ticker.setPaused(true);
         for(var i=0;i<squares.length;i++){
@@ -123,13 +147,16 @@
           squares[i].onPress = null;
           if (win === false){
             squares[i].uncache();
+            
           }
         }
         var replayParagraph = document.getElementById("replay");
         replayParagraph.innerHTML = "<a href='#' onClick='history.go(0);'>Play Again?</a>";
         if (win === true){
+          audioGanhou.play();
           matchesFoundText.text = "You win!"
         }else{
+          audioPerdeu.play();
           txt.text = secondsLeft + "... Game Over";
         }
       }
